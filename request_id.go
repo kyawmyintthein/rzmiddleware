@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/gin-gonic/gin"
 	multiint "github.com/mercari/go-grpc-interceptor/multiinterceptor"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -54,6 +55,18 @@ func RequestID(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
+}
+
+func GinRequestIDMW(c *gin.Context) {
+	ctx := c.Request.Context()
+	requestID := c.Request.Header.Get(RequestIDHeader)
+	if requestID == "" {
+		requestID = newRequestID()
+		c.Request.Header.Set(RequestIDHeader, requestID)
+	}
+	ctx = context.WithValue(ctx, RequestIDKey{}, requestID)
+	c.Request = c.Request.WithContext(ctx)
+	c.Next()
 }
 
 func newRequestID() string {
