@@ -69,6 +69,10 @@ func GinRequestIDMW(c *gin.Context) {
 	c.Next()
 }
 
+func NewRequestID() string {
+	return newRequestID()
+}
+
 func newRequestID() string {
 	myid := atomic.AddUint64(&reqid, 1)
 	return fmt.Sprintf("%s-%06d", prefix, myid)
